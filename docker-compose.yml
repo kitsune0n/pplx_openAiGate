@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  perplexity-api:
+    build: .
+    container_name: perplexity_api_service
+    ports:
+      - "5010:${PORT:-5010}"
+    volumes:
+      - ./cookies.txt:/app/cookies.txt
+    environment:
+      - PORT=5010
+      - PPLX_OPENAI_KEY=${PPLX_OPENAI_KEY:-your-secret-api-key}
+      - COOKIES_FILE=/app/cookies.txt
+      - LANGUAGE=en-US
+      - INCOGNITO=false
+      # Specify search sources separated by spaces (e.g., "web scholar social")
+      # or a single source (e.g., "web"), or leave empty for default behavior
+      # (Note: app.py must be modified to actually use these sources).
+      # Allowed values: web, scholar, social.
+      # Example: "web scholar social" or "web" or ""
+      - SOURCES=
+      - PREFIX=perplexity-chat
+    restart: unless-stopped 
