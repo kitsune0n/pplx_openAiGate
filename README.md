@@ -1,6 +1,6 @@
 # pplx_openAiGate
 
-This project provides a Flask-based web server that acts as an adapter between the OpenAI API format and the unofficial Perplexity AI API (pip package `perplexity_api_async ` from [helallao/perplexity-ai](https://github.com/helallao/perplexity-ai)). It allows you to use Perplexity's search capabilities and access its underlying language models through tools or applications that expect an OpenAI-compatible endpoint.
+This project provides a Flask-based web server that acts as an adapter between the OpenAI API format and Unofficial API Wrapper for Perplexity.ai (pip package `perplexity_api_async ` from [helallao/perplexity-ai](https://github.com/helallao/perplexity-ai)). It allows you to use Perplexity's search capabilities and access its underlying language models through tools or applications that expect an OpenAI-compatible endpoint.
 
 ## Features
 
