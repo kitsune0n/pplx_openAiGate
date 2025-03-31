@@ -12,10 +12,10 @@ import re
 from functools import wraps
 
 PERPLEXITY_MODES_MODELS = {
-    'pro': [None, 'sonar', 'gpt-4.5', 'gpt-4o', 'claude 3.7 sonnet', 'gemini 2.0 flash', 'grok-2'],
-    'reasoning': [None, 'r1', 'o3-mini', 'claude 3.7 sonnet'],
-    'auto': [None],
-    'deep research': [None]
+    'pro': ['', 'sonar', 'gpt-4.5', 'gpt-4o', 'claude 3.7 sonnet', 'gemini 2.0 flash', 'grok-2'],
+    'reasoning': ['', 'r1', 'o3-mini', 'claude 3.7 sonnet'],
+    'auto': [''],
+    'deep research': ['']
 }
 
 ALL_MODELS_WITH_PREFIX = []
