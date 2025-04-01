@@ -112,18 +112,9 @@ You can run the adapter using Python directly or via Docker.
 
 2.  **Create `cookies.txt`:** Follow the instructions in the "Getting Perplexity Cookies" section above to create `cookies.txt` in the project root. The `docker-compose.yml` file is configured to mount this file into the container.
 
-3.  **Configure Environment Variables:** Edit the `docker-compose.yml` file or create a `.env` file in the project root to set necessary variables, especially `PPLX_OPENAI_KEY`.
-    *   **`docker-compose.yml`:** Modify the `environment` section under the `perplexity-api` service.
-    *   **`.env` file (Recommended):** Create a file named `.env` with content like:
-        ```dotenv
-        PORT=5010
-        PPLX_OPENAI_KEY=your-chosen-secret-key # Change this!
-        COOKIES_FILE=/app/cookies.txt
-        LANGUAGE=en-US
-        INCOGNITO=false
-        SOURCES= # e.g., web scholar
-        PREFIX=perplexity-chat
-        ```
+3.  **Configure Environment Variables:** Edit the `docker-compose.yml` file.
+    *   **`docker-compose.yml`:** Modify the `environment` section.
+
     **Important:** Make sure to set a secure `PPLX_OPENAI_KEY`.
 
 4.  **Build and run the container:**
