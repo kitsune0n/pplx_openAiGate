@@ -203,6 +203,8 @@ You can use this adapter with applications that support connecting to OpenAI-com
 *   **API Key:** `<your-chosen-secret-key>` (The one you set via `PPLX_OPENAI_KEY` or `--api-key`)
 *   **Model Name:** After configuring the base URL and API key, the client should allow you to select from the models listed by the `/v1/models` endpoint (e.g., `perplexity-chat/pro-default`).
 
+Don't use Stream mode, in openwebui or other client set Stream: False.
+
 Replace `<your-server-ip>` with the actual IP address or hostname where the adapter is running, `<port>` with the configured port (default 5010), and `<your-chosen-secret-key>` with the API key you defined.
 
 ## License
