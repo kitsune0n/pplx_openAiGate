@@ -12,10 +12,10 @@ import re
 from functools import wraps
 
 PERPLEXITY_MODES_MODELS = {
-    'pro': ['', 'sonar', 'gpt-4.5', 'gpt-4o', 'claude 3.7 sonnet', 'gemini 2.0 flash', 'grok-2'],
-    'reasoning': ['', 'r1', 'o3-mini', 'claude 3.7 sonnet'],
-    'auto': [''],
-    'deep research': ['']
+    'pro': [None, 'sonar', 'gpt-4.5', 'gpt-4o', 'claude 3.7 sonnet', 'gemini 2.0 flash', 'grok-2'],
+    'reasoning': [None, 'r1', 'o3-mini', 'claude 3.7 sonnet'],
+    'auto': [None],
+    'deep research': [None]
 }
 
 ALL_MODELS_WITH_PREFIX = []
@@ -99,12 +99,12 @@ async def get_perplexity_response(prompt, model_id_with_prefix=DEFAULT_MODEL_ID,
             incognito=False
         )
 
+        plain_text_answer = None
+
         if resp and resp.get('text') and isinstance(resp['text'], list) and len(resp['text']) > 0:
             final_step = resp['text'][-1]
             if final_step.get('step_type') == 'FINAL' and final_step.get('content'):
                 answer_content_raw = final_step['content'].get('answer')
-
-                plain_text_answer = "no response."
                 if answer_content_raw:
                     try:
                         parsed_answer = json.loads(answer_content_raw)
@@ -115,66 +115,50 @@ async def get_perplexity_response(prompt, model_id_with_prefix=DEFAULT_MODEL_ID,
                     except json.JSONDecodeError:
                         plain_text_answer = str(answer_content_raw)
 
-                openai_compatible_response = {
-                    "id": resp.get('uuid', f"pplx-{int(time.time())}"),
-                    "object": "chat.completion",
-                    "created": int(time.time()),
-                    "model": model_id_with_prefix,
-                    "choices": [
-                        {
-                            "index": 0,
-                            "message": {
-                                "role": "assistant",
-                                "content": plain_text_answer
-                            },
-                            "finish_reason": "stop" if resp.get('status') == 'completed' else "length"
-                        }
-                    ],
-                    "usage": { "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0 }
-                }
-                return openai_compatible_response
-            else:
+            if not plain_text_answer:
+                 full_text_raw = " ".join([step.get('content', {}).get('answer', '')
+                                           for step in resp.get('text', [])
+                                           if step.get('content', {}).get('answer')])
+                 if full_text_raw:
+                      try:
+                           parsed_fallback = json.loads(full_text_raw)
+                           if isinstance(parsed_fallback, dict) and 'answer' in parsed_fallback:
+                                plain_text_answer = parsed_fallback['answer']
+                           else:
+                                plain_text_answer = str(full_text_raw)
+                      except json.JSONDecodeError:
+                           plain_text_answer = str(full_text_raw)
 
-                full_text_raw = " ".join([step.get('content', {}).get('answer', '')
-                                          for step in resp.get('text', [])
-                                          if step.get('content', {}).get('answer')])
-                plain_text_fallback = "Could not extract the answer."
-                if full_text_raw:
-                     try:
-                         parsed_fallback = json.loads(full_text_raw)
-                         if isinstance(parsed_fallback, dict) and 'answer' in parsed_fallback:
-                              plain_text_fallback = parsed_fallback['answer']
-                         else:
-                              plain_text_fallback = str(full_text_raw)
-                     except json.JSONDecodeError:
-                          plain_text_fallback = str(full_text_raw)
+        elif resp and resp.get('text') and isinstance(resp['text'], dict) and resp.get('step_type') == 'FINAL':
+             answer_content_raw = resp['text'].get('answer')
+             if answer_content_raw and isinstance(answer_content_raw, str):
+                 plain_text_answer = answer_content_raw
 
-                if plain_text_fallback != "Could not extract the answer.":
-                     openai_compatible_response = {
-                        "id": resp.get('uuid', f"pplx-fallback-{int(time.time())}"),
-                        "object": "chat.completion",
-                        "created": int(time.time()),
-                        "model": model_id_with_prefix + "-fallback",
-                        "choices": [
-                            {
-                                "index": 0,
-                                "message": { "role": "assistant", "content": plain_text_fallback },
-                                "finish_reason": "stop" if resp.get('status') == 'completed' else "length"
-                            }
-                        ],
-                        "usage": { "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0 }
+        if plain_text_answer:
+            openai_compatible_response = {
+                "id": resp.get('uuid', f"pplx-{int(time.time())}"),
+                "object": "chat.completion",
+                "created": int(time.time()),
+                "model": model_id_with_prefix,
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": plain_text_answer
+                        },
+                        "finish_reason": "stop" if resp.get('status') == 'completed' else "length"
                     }
-                     return openai_compatible_response
-                else:
-                    error_msg = "Error: Final step or content not found in Perplexity response (Fallback)."
-                    print(error_msg)
-                    return {"error": {"message": error_msg, "type": "api_error", "code": 500}}, 500
+                ],
+                "usage": { "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0 }
+            }
+            return openai_compatible_response
         else:
-             error_msg = "Error: Invalid or empty response from Perplexity API."
-             print(error_msg)
+             error_msg = "Error: Could not extract answer from Perplexity response structure."
+             print(f"{error_msg} Raw response: {str(resp)[:500]}...")
              return {"error": {"message": error_msg, "type": "api_error", "code": 502}}, 502
 
-    except perplexity_async.PerplexityError as e:
+    except Exception as e:
         error_msg = f"Perplexity API Error: {e}"
         print(error_msg)
         return {"error": {"message": error_msg, "type": "perplexity_api_error", "code": 503}}, 503
@@ -416,7 +400,7 @@ def setup_models(prefix):
 
     DEFAULT_MODEL_ID = f"{DEFAULT_PREFIX}/auto"
     if DEFAULT_MODEL_ID not in MODEL_ID_TO_API_PARAMS_MAP:
-        DEFAULT_MODEL_ID = next((k for k in MODEL_ID_TO_API_PARAMS_MAP if k.startswith(f"{DEFAULT_PREFIX}/pro-")),
+        DEFAULT_MODEL_ID = next((k for k in MODEL_ID_TO_API_PARAMS_MAP if k.startswith(f"{DEFAULT_PREFIX}/auto")),
                                 ALL_MODELS_WITH_PREFIX[0] if ALL_MODELS_WITH_PREFIX else None)
 
     if DEFAULT_MODEL_ID:
