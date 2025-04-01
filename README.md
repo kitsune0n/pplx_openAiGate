@@ -26,6 +26,7 @@ This project provides a Flask-based web server that acts as an adapter between t
     <li>reasoning-r1</li>
     <li>reasoning-o3-mini</li>
     <li>reasoning-claude-3.7-sonnet</li>
+    <li>auto</li>
     <li>deep-research</li>
 </ul>
 </details>
