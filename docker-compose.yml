@@ -1,8 +1,9 @@
 version: '3.8'
 services:
-  perplexity-api:
+  pplx_openai_gate:
     build: .
-    container_name: perplexity_api_service
+    image: pplx_openai_gate
+    container_name: pplx_openAiGate
     ports:
       - "5010:${PORT:-5010}"
     volumes:
