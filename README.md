@@ -30,6 +30,7 @@ This project provides a Flask-based web server that acts as an adapter between t
     <li>deep-research</li>
 </ul>
 </details>
+
 ## Setup
 
 ### Prerequisites
